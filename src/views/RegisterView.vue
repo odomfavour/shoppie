@@ -34,6 +34,7 @@ const register = () => {
 };
 
 const error = computed(() => store.state.error);
+const isLoading = computed(() => store.state.isLoading);
 
 const comparePassword = computed(() =>
   password.value !== confirmPass.value ? "Passwords do not match" : ""
@@ -166,7 +167,7 @@ const comparePassword = computed(() =>
               type="submit"
               class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 flex items-center"
             >
-              <span>
+              <span v-if="isLoading">
                 <svg
                   aria-hidden="true"
                   class="w-5 h-5 mr-2 text-gray-200 animate-spin fill-white"
@@ -184,7 +185,7 @@ const comparePassword = computed(() =>
                   />
                 </svg>
               </span>
-              Login
+              Create Account
             </button>
             <p class="mt-3 text-sm font-medium text-gray-900">
               Already have an account?
