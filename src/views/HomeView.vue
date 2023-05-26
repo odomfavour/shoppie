@@ -25,8 +25,8 @@ const addItem = (prod) => {
 
 // Define the checkCart computed property
 const checkCart = computed(() => {
-  const cartItems = store.state.user.cart || [];
   const user = store.state.user;
+  const cartItems = user ? user.cart || [] : [];
 
   return (itemId) => {
     if (user && cartItems) {
@@ -35,6 +35,7 @@ const checkCart = computed(() => {
     return false;
   };
 });
+
 
 // Access products from the store
 const products = computed(() => store.state.products);

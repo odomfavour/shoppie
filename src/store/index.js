@@ -137,44 +137,48 @@ export default createStore({
       }
     },
     async addToCart({ state, commit }, payload) {
-     if(state.user && state.user.uid) {
-      try {
-        const userRef = doc(db, "users", state.user.uid);
+      if (state.user && state.user.uid) {
+        try {
+          const userRef = doc(db, "users", state.user.uid);
 
-        // Check if the item already exists in the cart
-        const existingItem = state.user.cart.find(
-          (item) => item.id === payload.id
-        );
+          // Check if the item already exists in the cart
+          const existingItem = state.user.cart.find(
+            (item) => item.id === payload.id
+          );
 
-        if (existingItem) {
-          // Increase the quantity if the item already exists
-          existingItem.quantity += payload.quantity;
-        } else {
-          // Add the new item to the cart array with default quantity 1
-          payload.quantity = 1;
-          state.user.cart.push(payload);
+          if (existingItem) {
+            // Increase the quantity if the item already exists
+            existingItem.quantity += payload.quantity;
+          } else {
+            // Add the new item to the cart array with default quantity 1
+            payload.quantity = 1;
+            state.user.cart.push(payload);
+          }
+
+          // Update the cart array in the user document
+          await setDoc(userRef, { cart: state.user.cart });
+
+          // Commit the updated cart to the state
+          commit("setCart", state.user.cart);
+
+          // Display a success message to the user or perform any other actions
+          alert("Item added to cart successfully!");
+        } catch (error) {
+          console.log(error);
+          // Handle the error and display an error message to the user or perform any other actions
         }
-
-        // Update the cart array in the user document
-        await setDoc(userRef, { cart: state.user.cart });
-
-        // Commit the updated cart to the state
-        commit("setCart", state.user.cart);
-
-        // Display a success message to the user or perform any other actions
-        alert("Item added to cart successfully!");
-      } catch (error) {
-        console.log(error);
-        // Handle the error and display an error message to the user or perform any other actions
+      } else {
+        alert("You need and account before you can add item to your cart");
       }
-     }else {
-      alert('You need and account before you can add item to your cart')
-     }
     },
 
     async fetchUserItems({ state, commit }) {
       try {
-        const userRef = doc(db, "users", state.user.uid);
+        const userRef = doc(
+          db,
+          "users",
+          state.user.uid ? state.user.uid : state.user.id
+        );
         const userSnapshot = await getDoc(userRef);
 
         if (userSnapshot.exists()) {
@@ -298,7 +302,7 @@ export default createStore({
     cartTotal: (state) => {
       return state.user.cart.reduce(
         (total, item) =>
-          total + (parseFloat(item.price) * parseInt(item.quantity)),
+          total + parseFloat(item.price) * parseInt(item.quantity),
         0
       );
     },
