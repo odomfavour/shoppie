@@ -14,6 +14,7 @@ const increaseQuantity = (itemId) => {
 const decreaseQuantity = (itemId) => {
   store.dispatch("decreaseCartItemQuantity", itemId);
 };
+const user = computed(() => store.state.user);
 const cartItems = computed(() => store.state.user.cart);
 const cartTotal = computed(() => store.getters["cartTotal"]);
 const removeFromCart = async (itemId) => {
@@ -37,7 +38,7 @@ const removeFromCart = async (itemId) => {
     </div>
     <hr />
     <div className="cart-parent">
-      <div v-if="cartItems && cartItems.length > 0">
+      <div v-if="user && cartItems && cartItems.length > 0">
         <section class="h-[60vh] overflow-y-scroll">
           <div className="cart-holder">
             <div
