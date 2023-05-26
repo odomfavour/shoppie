@@ -12,14 +12,6 @@ const iError = ref("");
 
 const register = () => {
   if (agreed.value) {
-    console.log(
-      email.value,
-      password.value,
-      fName.value,
-      lName.value,
-      agreed.value,
-      confirmPass.value
-    );
     // Dispatch the Vuex action to register the user
     store.dispatch("signUpUser", {
       email: email.value,

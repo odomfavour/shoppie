@@ -66,7 +66,6 @@ export default createStore({
       }
     },
     async signUpUser({ state, commit }, payload) {
-      console.log(payload);
       const auth = getAuth();
       await setPersistence(auth, browserSessionPersistence);
 
@@ -79,7 +78,6 @@ export default createStore({
           payload.email,
           payload.password
         );
-        console.log(auth);
 
         const userRef = collection(db, "users");
         const newUser = {
@@ -124,11 +122,10 @@ export default createStore({
           lastName: payload.lastName,
           cart: [],
         };
-        console.log(newUser);
         // Set the user in the state or store it in localStorage, depending on your preference
         commit("setUser", newUser);
         // Store the user object in local storage or session storage for persistence
-        localStorage.setItem("user", JSON.stringify(newUser));
+        localStorage.setItem("newUser", JSON.stringify(newUser));
 
         // Redirect to the desired route after successful login
         // Replace '/dashboard' with the appropriate route path
@@ -140,8 +137,9 @@ export default createStore({
       }
     },
     async addToCart({ state, commit }, payload) {
+     if(state.user && state.user.uid) {
       try {
-        const userRef = doc(db, "users", state.user.id);
+        const userRef = doc(db, "users", state.user.uid);
 
         // Check if the item already exists in the cart
         const existingItem = state.user.cart.find(
@@ -169,12 +167,14 @@ export default createStore({
         console.log(error);
         // Handle the error and display an error message to the user or perform any other actions
       }
+     }else {
+      alert('You need and account before you can add item to your cart')
+     }
     },
 
     async fetchUserItems({ state, commit }) {
-      console.log("here", state.user);
       try {
-        const userRef = doc(db, "users", state.user.id);
+        const userRef = doc(db, "users", state.user.uid);
         const userSnapshot = await getDoc(userRef);
 
         if (userSnapshot.exists()) {
@@ -191,9 +191,8 @@ export default createStore({
     },
     // Action
     async increaseCartItemQuantity({ state, commit }, itemId) {
-      console.log(itemId);
       try {
-        const userRef = doc(db, "users", state.user.id);
+        const userRef = doc(db, "users", state.user.uid);
         const userDoc = await getDoc(userRef);
 
         if (userDoc.exists()) {
@@ -205,9 +204,6 @@ export default createStore({
             }
             return item;
           });
-          console.log(cart);
-
-          console.log(updatedCart);
 
           // Update the cart array in the user document
           await setDoc(userRef, { cart: updatedCart });
@@ -226,7 +222,7 @@ export default createStore({
     // Action
     async decreaseCartItemQuantity({ state, commit }, itemId) {
       try {
-        const userRef = doc(db, "users", state.user.id);
+        const userRef = doc(db, "users", state.user.uid);
         const userDoc = await getDoc(userRef);
 
         if (userDoc.exists()) {
@@ -262,7 +258,7 @@ export default createStore({
     },
     async removeFromCart({ state, commit }, itemId) {
       try {
-        const userRef = doc(db, "users", state.user.id);
+        const userRef = doc(db, "users", state.user.uid);
 
         // Fetch the user's cart from Firestore
         const userDoc = await getDoc(userRef);
@@ -300,10 +296,9 @@ export default createStore({
   },
   getters: {
     cartTotal: (state) => {
-      console.log(state.user.cart);
       return state.user.cart.reduce(
         (total, item) =>
-          total + parseFloat(item.price) * parseInt(item.quantity),
+          total + (parseFloat(item.price) * parseInt(item.quantity)),
         0
       );
     },

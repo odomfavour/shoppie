@@ -18,6 +18,7 @@ const auth = getAuth(firebaseApp);
 const storedUser = localStorage.getItem('newUser');
 if (storedUser) {
   const user = JSON.parse(storedUser);
+  console.log(user)
   user.id = user.uid
   store.commit('setUser', user);
 }

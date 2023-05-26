@@ -7,7 +7,6 @@ const password = ref("");
 const iError = ref("");
 
 const login = () => {
-  console.log(email.value, password.value);
   // Dispatch the Vuex action to register the user
   store.dispatch("loginUser", {
     email: email.value,
@@ -16,10 +15,9 @@ const login = () => {
   //   store.dispatch('register', { email: email.value, password: password.value });
 };
 
-const error = computed(() => store.state.error);
+// const error = computed(() => store.state.error);
 const isLoading = computed(() => store.state.isLoggedIn);
-const isLoggedIn = computed(() => store.getters.isLoggedIn);
-console.log(isLoggedIn.value)
+// const isLoggedIn = computed(() => store.getters.isLoggedIn);
 </script>
 
 

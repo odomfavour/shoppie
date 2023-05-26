@@ -101,17 +101,17 @@ const removeFromCart = async (itemId) => {
         <section className="mt-8">
           <div className="flex justify-between items-center mb-8">
             <h3 className="font-bold text-3xl">Subtotal:</h3>
-            <h3 className="text-2xl font-semibold">${{ cartTotal }}</h3>
+            <h3 className="text-2xl font-semibold">${{ cartTotal.toFixed(2) }}</h3>
           </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <div>
+            <!-- <div>
               <button
                 to="#"
                 className="md:px-10 px-5 py-3 bg-blue-900 text-white rounded-md flex items-center justify-center font-semibold"
               >
                 View Cart
               </button>
-            </div>
+            </div> -->
             <div>
               <button
                 className="md:px-10 px-5 py-3 bg-red-900 text-white rounded-md flex items-center justify-center font-semibold"

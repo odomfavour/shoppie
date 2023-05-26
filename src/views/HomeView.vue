@@ -16,23 +16,31 @@ onMounted(async () => {
     await store.dispatch("fetchUserItems");
   }
 });
-
+const removeFromCart = async (itemId) => {
+  await store.dispatch("removeFromCart", itemId);
+};
 const addItem = (prod) => {
-  store.dispatch('addToCart', prod)
-}
+  store.dispatch("addToCart", prod);
+};
+
+// Define the checkCart computed property
+const checkCart = computed(() => {
+  const cartItems = store.state.user.cart || [];
+  const user = store.state.user;
+
+  return (itemId) => {
+    if (user && cartItems) {
+      return cartItems.some((item) => item.id === itemId);
+    }
+    return false;
+  };
+});
 
 // Access products from the store
 const products = computed(() => store.state.products);
 const roundRating = (rate) => Math.round(rate);
 
 const cartActive = computed(() => store.state.cartActive);
-const user = computed(() => {
-  console.log(store.state)
-  if(store.state.user) {
-    return store.state.user
-  }
-});
-
 </script>
 
 <template>
@@ -82,10 +90,19 @@ const user = computed(() => {
                 <BIconCartX />
               </button> -->
             <button
-              className="p-3 border-2 border-solid rounded-lg bg-gray-50 border-red-900 text-red-800"
+              className="px-3 py-2 border-2 border-solid rounded-lg bg-gray-50 border-red-900 text-red-800 flex gap-2 items-center"
               @click="addItem(product)"
+              v-if="!checkCart(product.id)"
             >
               <BIconCart4 />
+              <p class="mb-0">Add</p>
+            </button>
+            <button
+              class="rounded-md bg-red-400 p-2 text-white"
+              @click="removeFromCart(product.id)"
+              v-else
+            >
+              Remove
             </button>
           </div>
         </div>
