@@ -137,22 +137,33 @@ export default createStore({
       }
     },
     async addToCart({ state, commit }, payload) {
-      if (state.user && state.user.uid) {
+      if ((state.user && state.user.uid) || (state.user && state.user.id)) {
         try {
-          const userRef = doc(db, "users", state.user.uid);
+          const userRef = doc(db, "users", state.user.uid || state.user.id);
 
           // Check if the item already exists in the cart
-          const existingItem = state.user.cart.find(
+          // const existingItem = state.user.cart ? state.user.cart.find((item) => item.id === payload.id) : null;
+          const existingItem = (state.user.cart || []).find(
             (item) => item.id === payload.id
           );
+
+          // if (existingItem) {
+          //   // Increase the quantity if the item already exists
+          //   existingItem.quantity += payload.quantity;
+          // } else {
+          //   // Add the new item to the cart array with default quantity 1
+          //   payload.quantity = 1;
+          //   state.user.cart.push(payload);
+          // }
 
           if (existingItem) {
             // Increase the quantity if the item already exists
             existingItem.quantity += payload.quantity;
           } else {
-            // Add the new item to the cart array with default quantity 1
+            // Add the new item to a copy of the cart array with default quantity 1
             payload.quantity = 1;
-            state.user.cart.push(payload);
+            const updatedCart = [...(state.user.cart || []), payload];
+            state.user.cart = updatedCart;
           }
 
           // Update the cart array in the user document
@@ -171,62 +182,102 @@ export default createStore({
         alert("You need and account before you can add item to your cart");
       }
     },
-
-    async fetchUserItems({ state, commit }) {
-      try {
-        const userRef = doc(
-          db,
-          "users",
-          state.user.uid ? state.user.uid : state.user.id
-        );
-        const userSnapshot = await getDoc(userRef);
-
-        if (userSnapshot.exists()) {
-          const userData = userSnapshot.data();
-          const cartItems = userData.cart || [];
-
-          // Commit the fetched items to the state
-          commit("setCart", cartItems);
+    async removeFromCart({ state, commit }, itemId) {
+      if ((state.user && state.user.uid) || (state.user && state.user.id)) {
+        try {
+          const userRef = doc(db, "users", state.user.uid ? state.user.uid : state.user.id);
+          console.log(userRef)
+  
+          // Fetch the user's cart from Firestore
+          const userDoc = await getDoc(userRef);
+          console.log(userDoc);
+          if (userDoc) {
+            const cart = userDoc.data().cart || [];
+            console.log(cart);
+            // Ensure cart is an array before filtering
+          const updatedCart = Array.isArray(cart)
+          ? cart.filter((item) => item.id !== itemId)
+          : [];
+          // Update the cart array in the user document
+          await updateDoc(userRef, { cart: updatedCart });
+  
+          // Commit the updated cart to the state
+          commit("setCart", updatedCart);
+  
+          // Display a success message to the user or perform any other actions
+          alert("Item removed from cart successfully!");
+          }
+          
+        } catch (error) {
+          console.log(error);
+          // Handle the error and display an error message to the user or perform any other actions
         }
-      } catch (error) {
-        console.log(error);
-        // Handle the error and display an error message to the user or perform any other actions
+      }
+     
+    },
+    async fetchUserItems({ state, commit }) {
+      if ((state.user && state.user.uid) || (state.user && state.user.id)) {
+        try {
+          const userRef = doc(
+            db,
+            "users",
+            state.user.uid ? state.user.uid : state.user.id
+          );
+          const userSnapshot = await getDoc(userRef);
+  
+          if (userSnapshot.exists()) {
+            const userData = userSnapshot.data();
+            const cartItems = userData.cart || [];
+  
+            // Commit the fetched items to the state
+            if (cartItems) {
+              commit("setCart", cartItems);
+            }
+          }
+        } catch (error) {
+          console.log(error);
+          // Handle the error and display an error message to the user or perform any other actions
+        }
       }
     },
     // Action
     async increaseCartItemQuantity({ state, commit }, itemId) {
-      try {
-        const userRef = doc(db, "users", state.user.uid);
-        const userDoc = await getDoc(userRef);
-
-        if (userDoc.exists()) {
-          const cart = userDoc.data().cart;
-          const updatedCart = cart.map((item) => {
-            if (item.id === itemId) {
-              // Increase the quantity of the matching item
-              item.quantity += 1;
-            }
-            return item;
-          });
-
-          // Update the cart array in the user document
-          await setDoc(userRef, { cart: updatedCart });
-
-          // Commit the updated cart to the state
-          commit("setCart", updatedCart);
-
-          // Display a success message to the user or perform any other actions
-          alert("Item quantity increased successfully!");
+      if ((state.user && state.user.uid) || (state.user && state.user.id)) {
+        try {
+          const userRef = doc(db, "users", state.user.uid ? state.user.uid : state.user.id);
+          const userDoc = await getDoc(userRef);
+  
+          if (userDoc.exists()) {
+            const cart = userDoc.data().cart;
+            const updatedCart = cart.map((item) => {
+              if (item.id === itemId) {
+                // Increase the quantity of the matching item
+                item.quantity += 1;
+              }
+              return item;
+            });
+  
+            // Update the cart array in the user document
+            await setDoc(userRef, { cart: updatedCart });
+  
+            // Commit the updated cart to the state
+            commit("setCart", updatedCart);
+  
+            // Display a success message to the user or perform any other actions
+            alert("Item quantity increased successfully!");
+          }
+        } catch (error) {
+          console.log(error);
+          // Handle the error and display an error message to the user or perform any other actions
         }
-      } catch (error) {
-        console.log(error);
-        // Handle the error and display an error message to the user or perform any other actions
       }
     },
     // Action
     async decreaseCartItemQuantity({ state, commit }, itemId) {
+      
+      if ((state.user && state.user.uid) || (state.user && state.user.id)) {
       try {
-        const userRef = doc(db, "users", state.user.uid);
+        const userRef = doc(db, "users", state.user.uid ? state.user.uid : state.user.id);
         const userDoc = await getDoc(userRef);
 
         if (userDoc.exists()) {
@@ -259,31 +310,10 @@ export default createStore({
         console.log(error);
         // Handle the error and display an error message to the user or perform any other actions
       }
+    }
     },
-    async removeFromCart({ state, commit }, itemId) {
-      try {
-        const userRef = doc(db, "users", state.user.uid);
+    
 
-        // Fetch the user's cart from Firestore
-        const userDoc = await getDoc(userRef);
-        const cart = userDoc.data().cart || [];
-
-        // Remove the item from the cart
-        const updatedCart = cart.filter((item) => item.id !== itemId);
-
-        // Update the cart array in the user document
-        await updateDoc(userRef, { cart: updatedCart });
-
-        // Commit the updated cart to the state
-        commit("setCart", updatedCart);
-
-        // Display a success message to the user or perform any other actions
-        alert("Item removed from cart successfully!");
-      } catch (error) {
-        console.log(error);
-        // Handle the error and display an error message to the user or perform any other actions
-      }
-    },
     logout({ commit }) {
       const auth = getAuth();
       // Perform Firebase sign out operation
